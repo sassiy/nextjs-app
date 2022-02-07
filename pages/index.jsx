@@ -1,8 +1,41 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import Link from 'next/link'
+import logo from '../public/vercel.svg'
+import dynamic from 'next/dynamic'
+import { useState } from 'react';
+import UserData from './userdata'
+import useSWR from 'swr'
 
 export default function Home() {
+  const [toggle, setToggle] = useState(false)
+  const changeToggle = ()=> {
+    setToggle(prevState => !prevState)
+  }
+  const List = dynamic(()=> import('./list'),{
+    loading: ()=> <p> now loading...</p>
+  })
+
+  //SWRーークライアントデータ取得
+  // const fetcher = async (url) => {
+  //   const res = await fetch(url)
+  //   const data = await res.json()
+  //   return data
+  // }
+
+  const fetcher = (url) => {
+     return fetch(url).then((res) => res.json())
+  }
+  const { data, error } = useSWR(
+    'https://jsonplaceholder.typicode.com/posts',
+    fetcher
+  );
+
+  if (error) return <div>failed to load</div>;
+  if (!data) return <div>loading...</div>;
+
+
   return (
     <div className={styles.container}>
       <Head>
@@ -13,15 +46,32 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+        <Link href="/about">
+          Welcome to
+        </Link>
+        <Link　href="/post/pp">
+        <a>動的ページへ</a>
+        </Link>
+      
         </h1>
+          <button onClick={changeToggle}>Open List</button>
+          {toggle && <List />}
+    
+        <h1>POSTデータ一覧</h1>
+        <ul>
+        {data.map((post)=> {
+            return (        
+                    <li key={post.id}>{post.title}</li>
+            )
+        })}
+        </ul>
 
-        <p className={styles.description}>
+        {/* <p className={styles.description}>
           Get started by editing{' '}
           <code className={styles.code}>pages/index.js</code>
-        </p>
+        </p> */}
 
-        <div className={styles.grid}>
+        {/* <div className={styles.grid}>
           <a href="https://nextjs.org/docs" className={styles.card}>
             <h2>Documentation &rarr;</h2>
             <p>Find in-depth information about Next.js features and API.</p>
@@ -49,7 +99,7 @@ export default function Home() {
               Instantly deploy your Next.js site to a public URL with Vercel.
             </p>
           </a>
-        </div>
+        </div> */}
       </main>
 
       <footer className={styles.footer}>
@@ -60,8 +110,13 @@ export default function Home() {
         >
           Powered by{' '}
           <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
+            <Image 
+              src="/vercel.svg" 
+              alt="Vercel Logo" 
+              width={72} 
+              height={16} />
           </span>
+         
         </a>
       </footer>
     </div>
